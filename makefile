@@ -1,9 +1,9 @@
 build:
 	rm -rf dist
-	npm run bundle
+	npm run build
 
 format:
-	npm run format:write
+	npm run format
 
 lint:
 	npm run lint
