@@ -3,7 +3,7 @@ build:
 	npm run build
 
 format:
-	npm run format
+	npm run format:write
 
 lint:
 	npm run lint
