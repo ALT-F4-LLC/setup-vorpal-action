@@ -102,7 +102,7 @@ npm install
 ### Building
 
 ```bash
-npm run bundle
+npm run build
 ```
 
 ### Testing
