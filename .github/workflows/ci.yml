@@ -15,11 +15,12 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - run: npm ci
       - run: npm run bundle
+      - run: npm run format
       - run: npm run lint
       - run: npm run test
 
