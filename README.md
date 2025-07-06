@@ -24,9 +24,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Vorpal
-        uses: ALT-F4-LLC/setup-vorpal-action@v1
+        uses: ALT-F4-LLC/setup-vorpal-action@main
         with:
-          version: 'v0.1.0'
+          version: "nightly"
 ```
 
 ### Advanced Usage with S3 Backend
@@ -40,28 +40,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Vorpal
-        uses: ALT-F4-LLC/setup-vorpal-action@v1
+        uses: ALT-F4-LLC/setup-vorpal-action@main
         with:
-          port: '23151'
-          registry-backend-s3-bucket: 'my-vorpal-registry'
-          registry-backend: 's3'
-          services: 'agent,registry,worker'
-          version: 'v0.1.0'
+          port: "23151"
+          registry-backend-s3-bucket: "my-vorpal-registry"
+          registry-backend: "s3"
+          services: "agent,registry,worker"
+          version: "nightly"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_DEFAULT_REGION: us-west-2
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: 'us-east-1'
 ```
 
 ## Inputs
 
-| Input | Description | Required | Default |
-|-------|-------------|----------|---------|
-| `port` | Port for vorpal services | false | `23151` |
-| `registry-backend-s3-bucket` | S3 bucket name for s3 backend | false | - |
-| `registry-backend` | Registry backend to use (local, s3) | false | `local` |
-| `services` | Services to start (comma-separated) | false | `agent,registry,worker` |
-| `version` | The version of Vorpal to install (e.g., v0.1.0) | true | - |
+| Input                        | Description                                  | Required | Default                 |
+| ---------------------------- | -------------------------------------------- | -------- | ----------------------- |
+| `port`                       | Port for vorpal services                     | false    | `23151`                 |
+| `registry-backend-s3-bucket` | S3 bucket name for s3 backend                | false    | -                       |
+| `registry-backend`           | Registry backend to use (local, s3)          | false    | `local`                 |
+| `services`                   | Services to start (comma-separated)          | false    | `agent,registry,worker` |
+| `version`                    | Version of Vorpal to install (e.g., nightly) | true     | -                       |
 
 ## Environment Variables
 
@@ -127,7 +127,7 @@ npm run lint
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
 
 ## Support
 

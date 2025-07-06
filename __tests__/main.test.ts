@@ -7,10 +7,28 @@ import {
   jest,
 } from "@jest/globals";
 
-let mockCore: any;
-let mockExec: any;
-let mockFs: any;
-let mockSpawn: any;
+let mockCore: {
+  debug: jest.Mock;
+  error: jest.Mock;
+  getInput: jest.Mock;
+  info: jest.Mock;
+  setFailed: jest.Mock;
+  setOutput: jest.Mock;
+  warning: jest.Mock;
+  addPath: jest.Mock;
+  saveState: jest.Mock;
+  getState: jest.Mock;
+};
+let mockExec: {
+  exec: jest.Mock;
+};
+let mockFs: {
+  openSync: jest.Mock;
+  closeSync: jest.Mock;
+  existsSync: jest.Mock;
+  readFileSync: jest.Mock;
+};
+let mockSpawn: jest.Mock;
 
 const MOCK_CHILD_PROCESS = {
   pid: 12345,
@@ -445,8 +463,8 @@ describe("Vorpal Setup Action", () => {
       const originalGetuid = process.getuid;
       const originalGetgid = process.getgid;
 
-      delete (process as any).getuid;
-      delete (process as any).getgid;
+      delete (process as unknown as { getuid?: () => number }).getuid;
+      delete (process as unknown as { getgid?: () => number }).getgid;
 
       mockCore.getInput.mockImplementation((name: string) => {
         const inputs: Record<string, string> = {

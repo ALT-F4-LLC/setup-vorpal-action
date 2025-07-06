@@ -7,9 +7,18 @@ import {
   jest,
 } from "@jest/globals";
 
-let mockCore: any;
-let mockFs: any;
-let mockProcess: any;
+let mockCore: {
+  info: jest.Mock;
+  error: jest.Mock;
+  getState: jest.Mock;
+};
+let mockFs: {
+  existsSync: jest.Mock;
+  readFileSync: jest.Mock;
+};
+let mockProcess: {
+  kill: jest.Mock;
+};
 
 beforeEach(() => {
   jest.resetModules();
