@@ -27,7 +27,7 @@ export async function run(): Promise<void> {
     const isLinux = process.platform === "linux";
 
     if (isLinux) {
-      core.info("Linux platform detected. TODO: add Linux-specific logic.");
+      core.info("Linux platform detected.");
 
       await installBubblewrapIfAptAvailable();
       await setupBubblewrapAppArmor();

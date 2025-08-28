@@ -27262,7 +27262,7 @@ async function run() {
         };
         const isLinux = process.platform === "linux";
         if (isLinux) {
-            coreExports.info("Linux platform detected. TODO: add Linux-specific logic.");
+            coreExports.info("Linux platform detected.");
             await installBubblewrapIfAptAvailable();
             await setupBubblewrapAppArmor();
         }
