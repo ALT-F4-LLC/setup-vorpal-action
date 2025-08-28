@@ -15,7 +15,6 @@ interface VorpalInputs {
 
 export async function run(): Promise<void> {
   try {
-    // Get inputs
     const inputs: VorpalInputs = {
       version: core.getInput("version"),
       useLocalBuild: core.getInput("use-local-build") === "true",
@@ -25,16 +24,19 @@ export async function run(): Promise<void> {
       services: core.getInput("services") || "agent,registry,worker",
     };
 
-    // Step 1: Install Vorpal
+    const isLinux = process.platform === "linux";
+
+    if (isLinux) {
+      core.info("Linux platform detected.");
+
+      await installBubblewrapIfAptAvailable();
+      await setupBubblewrapAppArmor();
+    }
+
     await installVorpal(inputs.version, inputs.useLocalBuild);
-
-    // Step 2: Setup Vorpal Directories
     await setupVorpalDirectories();
-
-    // Step 3: Generate Vorpal Keys
     await generateVorpalKeys();
 
-    // Step 4: Start Vorpal
     await startVorpal(
       inputs.registryBackend,
       inputs.registryBackendS3Bucket,
@@ -43,7 +45,96 @@ export async function run(): Promise<void> {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
+
     core.setFailed(errorMessage);
+  }
+}
+
+async function installBubblewrapIfAptAvailable(): Promise<void> {
+  try {
+    let aptCmd = "apt-get";
+
+    let code = await exec.exec(aptCmd, ["--version"], {
+      silent: true,
+      ignoreReturnCode: true,
+    });
+
+    if (code !== 0) {
+      aptCmd = "apt";
+
+      code = await exec.exec(aptCmd, ["--version"], {
+        silent: true,
+        ignoreReturnCode: true,
+      });
+    }
+
+    if (code !== 0) {
+      core.info("apt/apt-get not available; skipping bubblewrap install.");
+
+      return;
+    }
+
+    core.info(`Detected ${aptCmd}. Installing bubblewrap...`);
+
+    await exec.exec("sudo", [aptCmd, "update"]);
+    await exec.exec("sudo", [aptCmd, "install", "-y", "bubblewrap"]);
+
+    core.info("bubblewrap installation completed (apt).");
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+
+    core.warning(`bubblewrap install via apt skipped due to error: ${msg}`);
+  }
+}
+
+async function setupBubblewrapAppArmor(): Promise<void> {
+  try {
+    const bwrapPath = "/usr/bin/bwrap";
+
+    if (!fs.existsSync(bwrapPath)) {
+      core.info("/usr/bin/bwrap not found; skipping AppArmor policy setup.");
+
+      return;
+    }
+
+    core.info("Configuring AppArmor policy for bubblewrap...");
+
+    const policy = [
+      "abi <abi/4.0>,",
+      "include <tunables/global>",
+      "",
+      "profile bwrap /usr/bin/bwrap flags=(unconfined) {",
+      "  userns,",
+      "",
+      "  # Site-specific additions and overrides. See local/README for details.",
+      "  include if exists <local/bwrap>",
+      "}",
+      "",
+    ].join("\n");
+
+    const localPolicyFile = "bwrap";
+
+    fs.writeFileSync(localPolicyFile, policy, { encoding: "utf8" });
+
+    await exec.exec("sudo", ["mv", localPolicyFile, "/etc/apparmor.d/bwrap"]);
+
+    try {
+      await exec.exec("sudo", ["systemctl", "restart", "apparmor.service"]);
+
+      core.info("AppArmor service restarted.");
+    } catch (svcErr) {
+      const svcMsg = svcErr instanceof Error ? svcErr.message : String(svcErr);
+
+      core.warning(
+        `Could not restart apparmor.service (continuing): ${svcMsg}`,
+      );
+    }
+
+    core.info("AppArmor policy for bubblewrap configured.");
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+
+    core.warning(`AppArmor policy setup skipped due to error: ${msg}`);
   }
 }
 
@@ -55,7 +146,9 @@ export async function installVorpal(
 
   if (useLocalBuild) {
     core.info("Using local build of vorpal");
+
     await exec.exec("chmod", ["+x", "./dist/vorpal"]);
+
     core.addPath(path.join(process.cwd(), "dist"));
   } else {
     if (!version) {
@@ -83,7 +176,6 @@ export async function installVorpal(
 export async function setupVorpalDirectories(): Promise<void> {
   core.info("Setting up Vorpal directories...");
 
-  // Create directories using a loop since brace expansion doesn't work with exec.exec
   const directories: string[] = [
     "/var/lib/vorpal/key",
     "/var/lib/vorpal/sandbox",
@@ -98,7 +190,6 @@ export async function setupVorpalDirectories(): Promise<void> {
     await exec.exec("sudo", ["mkdir", "-pv", dir]);
   }
 
-  // Get current user and group dynamically
   if (!process.getuid || !process.getgid) {
     throw new Error(
       "Unable to get user/group ID - not supported on this platform",
@@ -109,11 +200,13 @@ export async function setupVorpalDirectories(): Promise<void> {
   const gid = process.getgid();
 
   core.info(`Setting ownership to ${uid}:${gid}`);
+
   await exec.exec("sudo", ["chown", "-R", `${uid}:${gid}`, "/var/lib/vorpal"]);
 }
 
 export async function generateVorpalKeys(): Promise<void> {
   core.info("Generating Vorpal keys...");
+
   await exec.exec("vorpal", ["system", "keys", "generate"]);
 }
 
@@ -125,7 +218,6 @@ export async function startVorpal(
 ): Promise<void> {
   core.info("Starting Vorpal service...");
 
-  // Build command arguments
   const args: string[] = [
     "services",
     "start",
@@ -137,7 +229,6 @@ export async function startVorpal(
     registryBackend,
   ];
 
-  // Add S3 bucket if S3 backend is specified
   if (registryBackend === "s3") {
     if (!registryBackendS3Bucket) {
       throw new Error(
@@ -145,7 +236,6 @@ export async function startVorpal(
       );
     }
 
-    // Check for required AWS environment variables
     const awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID;
     const awsDefaultRegion = process.env.AWS_DEFAULT_REGION;
     const awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
@@ -167,20 +257,18 @@ export async function startVorpal(
     }
 
     core.info("AWS credentials validated for S3 backend");
+
     args.push("--registry-backend-s3-bucket", registryBackendS3Bucket);
   }
 
   const command = `vorpal ${args.join(" ")}`;
+
   core.info(`Starting vorpal with command: ${command}`);
 
-  // Start the service in background
   const logFile = "/tmp/vorpal_output.log";
   const logFd = fs.openSync(logFile, "w");
-
-  // Prepare environment variables for the process
   const env = { ...process.env };
 
-  // Ensure AWS credentials are passed to the process when using S3 backend
   if (registryBackend === "s3") {
     env.AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
     env.AWS_DEFAULT_REGION = process.env.AWS_DEFAULT_REGION;
@@ -193,32 +281,28 @@ export async function startVorpal(
     env: env,
   });
 
-  // Detach the process from the parent
   child.unref();
 
-  // Close our reference to the file descriptor
   fs.closeSync(logFd);
 
-  // Give it a moment to start
   await new Promise((resolve) => setTimeout(resolve, 2000));
 
-  // Check if process is still running
   if (child.killed || child.exitCode !== null) {
     const logs = fs.readFileSync(logFile, "utf8");
+
     core.error("Vorpal service failed to start");
     core.error("Service output:");
     core.error(logs);
+
     throw new Error("Vorpal service failed to start");
   }
 
   core.info(`Vorpal service is running (PID: ${child.pid})`);
 
-  // Store PID for cleanup
   if (child.pid) {
     core.saveState("vorpal-pid", child.pid.toString());
   }
 
-  // Show initial logs
   await new Promise((resolve) => setTimeout(resolve, 500)); // Wait for file to be written
 
   if (fs.existsSync(logFile)) {
