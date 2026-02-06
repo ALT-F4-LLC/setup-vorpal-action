@@ -219,6 +219,7 @@ export async function startVorpal(
   core.info("Starting Vorpal service...");
 
   const args: string[] = [
+    "system",
     "services",
     "start",
     "--port",

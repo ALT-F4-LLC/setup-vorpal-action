@@ -27394,6 +27394,7 @@ async function generateVorpalKeys() {
 async function startVorpal(registryBackend, registryBackendS3Bucket, port, services) {
     coreExports.info("Starting Vorpal service...");
     const args = [
+        "system",
         "services",
         "start",
         "--port",
