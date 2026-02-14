@@ -18,7 +18,6 @@ inputs:
   port:
     description: "Port for vorpal services."
     required: false
-    default: "23151"
   services:
     description: "Services to start (comma-separated)."
     required: false

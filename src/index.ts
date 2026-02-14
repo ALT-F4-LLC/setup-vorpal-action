@@ -20,7 +20,7 @@ export async function run(): Promise<void> {
       useLocalBuild: core.getInput("use-local-build") === "true",
       registryBackend: core.getInput("registry-backend") || "local",
       registryBackendS3Bucket: core.getInput("registry-backend-s3-bucket"),
-      port: core.getInput("port") || "23151",
+      port: core.getInput("port"),
       services: core.getInput("services") || "agent,registry,worker",
     };
 
@@ -222,13 +222,15 @@ export async function startVorpal(
     "system",
     "services",
     "start",
-    "--port",
-    port,
     "--services",
     services,
     "--registry-backend",
     registryBackend,
   ];
+
+  if (port) {
+    args.push("--port", port);
+  }
 
   if (registryBackend === "s3") {
     if (!registryBackendS3Bucket) {

@@ -27257,7 +27257,7 @@ async function run() {
             useLocalBuild: coreExports.getInput("use-local-build") === "true",
             registryBackend: coreExports.getInput("registry-backend") || "local",
             registryBackendS3Bucket: coreExports.getInput("registry-backend-s3-bucket"),
-            port: coreExports.getInput("port") || "23151",
+            port: coreExports.getInput("port"),
             services: coreExports.getInput("services") || "agent,registry,worker",
         };
         const isLinux = process.platform === "linux";
@@ -27397,13 +27397,14 @@ async function startVorpal(registryBackend, registryBackendS3Bucket, port, servi
         "system",
         "services",
         "start",
-        "--port",
-        port,
         "--services",
         services,
         "--registry-backend",
         registryBackend,
     ];
+    if (port) {
+        args.push("--port", port);
+    }
     if (registryBackend === "s3") {
         if (!registryBackendS3Bucket) {
             throw new Error("registry-backend-s3-bucket is required when using s3 backend");
