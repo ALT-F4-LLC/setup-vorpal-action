@@ -1,0 +1,9 @@
+lockfile = 1
+
+[[sources]]
+name = "bun"
+path = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.10/bun-darwin-aarch64.zip"
+includes = []
+excludes = []
+digest = "93bb13af9d1586c92a61b6afb94a21ef632b88a9510b56c9102f5ab09f34db89"
+platform = "aarch64-darwin"

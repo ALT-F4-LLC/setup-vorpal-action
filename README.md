@@ -26,7 +26,7 @@ jobs:
       - name: Setup Vorpal
         uses: ALT-F4-LLC/setup-vorpal-action@main
         with:
-          version: "nightly"
+          version: "0.1.0"
 ```
 
 ### Advanced Usage with S3 Backend
@@ -46,7 +46,7 @@ jobs:
           registry-backend-s3-bucket: "my-vorpal-registry"
           registry-backend: "s3"
           services: "agent,registry,worker"
-          version: "nightly"
+          version: "0.1.0"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_DEFAULT_REGION: us-west-2
@@ -55,13 +55,13 @@ jobs:
 
 ## Inputs
 
-| Input                        | Description                                  | Required | Default                 |
-| ---------------------------- | -------------------------------------------- | -------- | ----------------------- |
-| `port`                       | Port for vorpal services                     | false    | `23151`                 |
-| `registry-backend-s3-bucket` | S3 bucket name for s3 backend                | false    | -                       |
-| `registry-backend`           | Registry backend to use (local, s3)          | false    | `local`                 |
-| `services`                   | Services to start (comma-separated)          | false    | `agent,registry,worker` |
-| `version`                    | Version of Vorpal to install (e.g., nightly) | true     | -                       |
+| Input                        | Description                                | Required | Default                 |
+| ---------------------------- | ------------------------------------------ | -------- | ----------------------- |
+| `port`                       | Port for vorpal services                   | false    | `23151`                 |
+| `registry-backend-s3-bucket` | S3 bucket name for s3 backend              | false    | -                       |
+| `registry-backend`           | Registry backend to use (local, s3)        | false    | `local`                 |
+| `services`                   | Services to start (comma-separated)        | false    | `agent,registry,worker` |
+| `version`                    | Version of Vorpal to install (e.g., 0.1.0) | true     | -                       |
 
 ## Environment Variables
 

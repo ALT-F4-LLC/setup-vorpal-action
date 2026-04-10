@@ -27253,7 +27253,7 @@ var execExports = requireExec();
 async function run() {
     try {
         const inputs = {
-            version: coreExports.getInput("version"),
+            version: coreExports.getInput("version") || "0.1.0",
             useLocalBuild: coreExports.getInput("use-local-build") === "true",
             registryBackend: coreExports.getInput("registry-backend") || "local",
             registryBackendS3Bucket: coreExports.getInput("registry-backend-s3-bucket"),

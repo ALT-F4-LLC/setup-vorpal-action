@@ -16,7 +16,7 @@ interface VorpalInputs {
 export async function run(): Promise<void> {
   try {
     const inputs: VorpalInputs = {
-      version: core.getInput("version"),
+      version: core.getInput("version") || "0.1.0",
       useLocalBuild: core.getInput("use-local-build") === "true",
       registryBackend: core.getInput("registry-backend") || "local",
       registryBackendS3Bucket: core.getInput("registry-backend-s3-bucket"),
