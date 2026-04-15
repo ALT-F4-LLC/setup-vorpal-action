@@ -2,7 +2,7 @@ name: "Set up Vorpal"
 description: "Downloads and sets up the Vorpal binary, and starts the service."
 inputs:
   version:
-    description: "The version of Vorpal to install (e.g., v0.1.0)."
+    description: "The version of Vorpal to install (e.g., v0.1.1)."
     required: false
   use-local-build:
     description: "Use a pre-built binary from the workspace."
