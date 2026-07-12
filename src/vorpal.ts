@@ -4,26 +4,18 @@ import {
   TypeScriptDevelopmentEnvironment,
 } from "@altf4llc/vorpal-sdk";
 
-// Define build context
-
 const ctx = ConfigContext.create();
 
-// Define supported artifact systems
-
-const systems: ArtifactSystem[] = [
-  ArtifactSystem.AARCH64_DARWIN,
-  ArtifactSystem.AARCH64_LINUX,
-  ArtifactSystem.X8664_DARWIN,
-  ArtifactSystem.X8664_LINUX,
+const systems = [
+    "aarch64-darwin",
+    "aarch64-linux",
+    "x86_64-darwin",
+    "x86_64-linux",
 ];
-
-// Define language-specific development environment artifact
 
 await new TypeScriptDevelopmentEnvironment(
   "setup-vorpal-action-shell",
   systems,
 ).build(ctx);
-
-// Run context to build
 
 await ctx.run();
