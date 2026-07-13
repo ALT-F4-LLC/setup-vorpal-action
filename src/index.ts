@@ -5,6 +5,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 interface VorpalInputs {
+  githubToken: string;
   port: string;
   registryBackend: string;
   registryBackendS3Bucket: string;
@@ -13,16 +14,75 @@ interface VorpalInputs {
   version: string;
 }
 
+const VORPAL_LATEST_RELEASE_URL =
+  "https://api.github.com/repos/ALT-F4-LLC/vorpal/releases/latest";
+const VORPAL_VERSION_TAG_REGEX = /^v?\d+\.\d+\.\d+([-+.][0-9A-Za-z-.]+)?$/;
+const VORPAL_ATTESTATION_REPO = "ALT-F4-LLC/vorpal";
+const VORPAL_ATTESTATION_SIGNER_WORKFLOW =
+  "ALT-F4-LLC/vorpal/.github/workflows/vorpal.yaml";
+
+export async function getLatestVersion(): Promise<string> {
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github+json",
+    "User-Agent": "setup-vorpal-action",
+  };
+
+  if (process.env.GITHUB_TOKEN) {
+    headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  }
+
+  const response = await fetch(VORPAL_LATEST_RELEASE_URL, {
+    headers,
+    signal: AbortSignal.timeout(10000),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch latest Vorpal release: GitHub API returned ${response.status} ${response.statusText}`,
+    );
+  }
+
+  const data: unknown = await response.json();
+
+  const tagName =
+    typeof data === "object" && data !== null && "tag_name" in data
+      ? (data as { tag_name: unknown }).tag_name
+      : undefined;
+
+  if (typeof tagName !== "string" || tagName.length === 0) {
+    throw new Error("Unexpected GitHub API response: missing tag_name");
+  }
+
+  if (!VORPAL_VERSION_TAG_REGEX.test(tagName)) {
+    throw new Error(
+      `Latest Vorpal release tag "${tagName}" does not match expected version format`,
+    );
+  }
+
+  return tagName;
+}
+
 export async function run(): Promise<void> {
   try {
     const inputs: VorpalInputs = {
-      version: core.getInput("version") || "0.1.1",
+      version: core.getInput("version"),
       useLocalBuild: core.getInput("use-local-build") === "true",
       registryBackend: core.getInput("registry-backend") || "local",
       registryBackendS3Bucket: core.getInput("registry-backend-s3-bucket"),
       port: core.getInput("port"),
       services: core.getInput("services") || "agent,registry,worker",
+      githubToken: core.getInput("github-token"),
     };
+
+    let version = inputs.version;
+
+    if (!version && !inputs.useLocalBuild) {
+      version = await getLatestVersion();
+
+      core.info(`Resolved latest Vorpal version: ${version}`);
+    }
+
+    core.setOutput("version", version);
 
     const isLinux = process.platform === "linux";
 
@@ -33,7 +93,7 @@ export async function run(): Promise<void> {
       await setupBubblewrapAppArmor();
     }
 
-    await installVorpal(inputs.version, inputs.useLocalBuild);
+    await installVorpal(version, inputs.useLocalBuild, inputs.githubToken);
     await setupVorpalDirectories();
     await generateVorpalKeys();
 
@@ -141,6 +201,7 @@ async function setupBubblewrapAppArmor(): Promise<void> {
 export async function installVorpal(
   version: string,
   useLocalBuild: boolean,
+  githubToken: string,
 ): Promise<void> {
   core.info("Installing Vorpal...");
 
@@ -166,11 +227,109 @@ export async function installVorpal(
 
     await exec.exec("curl", ["-sSL", "-o", releaseAsset, releaseUrl]);
     await exec.exec("tar", ["-xzf", releaseAsset]);
+
+    await verifyVorpalAttestation("vorpal", version, releaseAsset, githubToken);
+
     await exec.exec("rm", [releaseAsset]);
     await exec.exec("chmod", ["+x", "vorpal"]);
 
     core.addPath(process.cwd());
   }
+}
+
+async function verifyVorpalAttestation(
+  binaryPath: string,
+  version: string,
+  releaseAsset: string,
+  githubToken: string,
+): Promise<void> {
+  const ghNotFoundError = (): Error =>
+    new Error(
+      `gh CLI not found: attestation verification of Vorpal ${version} (${releaseAsset}) requires the GitHub CLI ('gh'). Install gh on the runner, or use 'use-local-build: true' to skip the download path.`,
+    );
+
+  let ghVersionCode: number;
+
+  try {
+    ghVersionCode = await exec.exec("gh", ["--version"], {
+      silent: true,
+      ignoreReturnCode: true,
+    });
+  } catch {
+    throw ghNotFoundError();
+  }
+
+  if (ghVersionCode !== 0) {
+    throw ghNotFoundError();
+  }
+
+  let stdout = "";
+  let stderr = "";
+
+  core.info(
+    `Verifying attestation for ${releaseAsset} via gh attestation verify...`,
+  );
+
+  // ignoreReturnCode: true lets us classify the failure from captured output before
+  // throwing; every non-zero branch below ends in an explicit throw (never falls
+  // through to chmod).
+  const verifyCode = await exec.exec(
+    "gh",
+    [
+      "attestation",
+      "verify",
+      binaryPath,
+      "--repo",
+      VORPAL_ATTESTATION_REPO,
+      "--signer-workflow",
+      VORPAL_ATTESTATION_SIGNER_WORKFLOW,
+    ],
+    {
+      ignoreReturnCode: true,
+      env: { ...process.env, GH_TOKEN: githubToken },
+      listeners: {
+        stdout: (data: Buffer) => {
+          stdout += data.toString();
+        },
+        stderr: (data: Buffer) => {
+          stderr += data.toString();
+        },
+      },
+    },
+  );
+
+  if (verifyCode !== 0) {
+    const output = `${stdout}\n${stderr}`.toLowerCase();
+
+    // Empirically observed gh CLI output (every verification failure mode exits 1,
+    // so classification is content-based, not exit-code-based): "HTTP 404" for no
+    // matching attestation, "HTTP 401" for unauthenticated, and a
+    // "verifying with issuer ..." line for a signer/issuer mismatch. Tamper and any
+    // other failure fall through to the generic class below.
+    let failureClass = "attestation verification failed";
+
+    if (/http 404/.test(output)) {
+      failureClass = "no attestation found";
+    } else if (/http 401/.test(output)) {
+      failureClass = "authentication failed — check github-token";
+    } else if (/verifying with issuer/.test(output)) {
+      failureClass = "signer identity mismatch";
+    } else if (
+      /timeout|econnrefused|could not resolve|dial tcp|network is unreachable/.test(
+        output,
+      )
+    ) {
+      failureClass = "attestation service unreachable";
+    }
+
+    throw new Error(
+      `Vorpal ${failureClass} for version ${version} (${releaseAsset}). Verification requires an attestation signed by ${VORPAL_ATTESTATION_SIGNER_WORKFLOW} in ${VORPAL_ATTESTATION_REPO}. Minimum supported Vorpal version is 0.2.2.`,
+    );
+  }
+
+  core.info(
+    `Verified Vorpal ${version} (${releaseAsset}) attestation from ${VORPAL_ATTESTATION_SIGNER_WORKFLOW}.`,
+  );
 }
 
 export async function setupVorpalDirectories(): Promise<void> {

@@ -25,8 +25,6 @@ jobs:
     steps:
       - name: Setup Vorpal
         uses: ALT-F4-LLC/setup-vorpal-action@main
-        with:
-          version: "0.1.1"
 ```
 
 ### Advanced Usage with S3 Backend
@@ -46,22 +44,26 @@ jobs:
           registry-backend-s3-bucket: "my-vorpal-registry"
           registry-backend: "s3"
           services: "agent,registry,worker"
-          version: "0.1.1"
+          version: "0.4.0"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_DEFAULT_REGION: us-west-2
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 ```
 
+> [!TIP]
+> Pin `version` explicitly for reproducible, production CI runs. Omit it to always install the latest release for convenience or local development.
+
 ## Inputs
 
-| Input                        | Description                                | Required | Default                 |
-| ---------------------------- | ------------------------------------------ | -------- | ----------------------- |
-| `port`                       | Port for vorpal services                   | false    | `23151`                 |
-| `registry-backend-s3-bucket` | S3 bucket name for s3 backend              | false    | -                       |
-| `registry-backend`           | Registry backend to use (local, s3)        | false    | `local`                 |
-| `services`                   | Services to start (comma-separated)        | false    | `agent,registry,worker` |
-| `version`                    | Version of Vorpal to install (e.g., 0.1.1) | true     | -                       |
+| Input                        | Description                                                                          | Required | Default                 |
+| ---------------------------- | ------------------------------------------------------------------------------------ | -------- | ----------------------- |
+| `github-token`               | Token used to authenticate `gh attestation verify` when installing a released binary | false    | `${{ github.token }}`   |
+| `port`                       | Port for vorpal services                                                             | false    | `23151`                 |
+| `registry-backend-s3-bucket` | S3 bucket name for s3 backend                                                        | false    | -                       |
+| `registry-backend`           | Registry backend to use (local, s3)                                                  | false    | `local`                 |
+| `services`                   | Services to start (comma-separated)                                                  | false    | `agent,registry,worker` |
+| `version`                    | Version of Vorpal to install (e.g., 0.4.0)                                           | false    | latest release          |
 
 ## Environment Variables
 
@@ -77,6 +79,22 @@ The action supports the following architectures:
 
 - **Linux**: x86_64, aarch64
 - **macOS**: x86_64, aarch64
+
+## Binary Integrity Verification
+
+When installing a released Vorpal binary (`use-local-build: false`, the default), the
+action verifies the downloaded binary's
+[GitHub artifact attestation](https://docs.github.com/en/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds)
+via the `gh` CLI before marking it executable. Verification is pinned to the
+`ALT-F4-LLC/vorpal` release workflow and fails closed on any error (tampered binary,
+missing attestation, wrong signer, or `gh` unavailable).
+
+- Requires the `gh` CLI on the runner (pre-installed on GitHub-hosted runners) and
+  network egress to GitHub's attestation API.
+- Requires a token with permission to read attestations on `ALT-F4-LLC/vorpal`; the
+  `github-token` input defaults to `${{ github.token }}`.
+- The minimum supported Vorpal version is `0.2.2` (the oldest release with a
+  published attestation). Pinning an older version fails the install.
 
 ## What the Action Does
 
