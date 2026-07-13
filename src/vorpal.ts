@@ -1,5 +1,4 @@
 import {
-  ArtifactSystem,
   ConfigContext,
   TypeScriptDevelopmentEnvironment,
 } from "@altf4llc/vorpal-sdk";
