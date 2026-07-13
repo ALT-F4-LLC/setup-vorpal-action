@@ -2,7 +2,7 @@ name: "Set up Vorpal"
 description: "Downloads and sets up the Vorpal binary, and starts the service."
 inputs:
   version:
-    description: "The version of Vorpal to install (e.g., v0.1.1)."
+    description: "The version of Vorpal to install (e.g., v0.4.0). Defaults to the latest release on GitHub when omitted."
     required: false
   use-local-build:
     description: "Use a pre-built binary from the workspace."
@@ -22,6 +22,9 @@ inputs:
     description: "Services to start (comma-separated)."
     required: false
     default: "agent,registry,worker"
+outputs:
+  version:
+    description: "The version of Vorpal that was installed (explicit input or resolved latest release)."
 runs:
   using: "node24"
   main: "dist/index.js"

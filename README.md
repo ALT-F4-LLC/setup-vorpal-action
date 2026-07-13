@@ -25,8 +25,6 @@ jobs:
     steps:
       - name: Setup Vorpal
         uses: ALT-F4-LLC/setup-vorpal-action@main
-        with:
-          version: "0.1.1"
 ```
 
 ### Advanced Usage with S3 Backend
@@ -46,12 +44,15 @@ jobs:
           registry-backend-s3-bucket: "my-vorpal-registry"
           registry-backend: "s3"
           services: "agent,registry,worker"
-          version: "0.1.1"
+          version: "0.4.0"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_DEFAULT_REGION: us-west-2
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 ```
+
+> [!TIP]
+> Pin `version` explicitly for reproducible, production CI runs. Omit it to always install the latest release for convenience or local development.
 
 ## Inputs
 
@@ -61,7 +62,7 @@ jobs:
 | `registry-backend-s3-bucket` | S3 bucket name for s3 backend              | false    | -                       |
 | `registry-backend`           | Registry backend to use (local, s3)        | false    | `local`                 |
 | `services`                   | Services to start (comma-separated)        | false    | `agent,registry,worker` |
-| `version`                    | Version of Vorpal to install (e.g., 0.1.1) | true     | -                       |
+| `version`                    | Version of Vorpal to install (e.g., 0.4.0) | false    | latest release          |
 
 ## Environment Variables
 

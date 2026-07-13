@@ -27250,23 +27250,58 @@ var coreExports = requireCore();
 
 var execExports = requireExec();
 
+const VORPAL_LATEST_RELEASE_URL = "https://api.github.com/repos/ALT-F4-LLC/vorpal/releases/latest";
+const VORPAL_VERSION_TAG_REGEX = /^v?\d+\.\d+\.\d+([-+.][0-9A-Za-z-.]+)?$/;
+async function getLatestVersion() {
+    const headers = {
+        Accept: "application/vnd.github+json",
+        "User-Agent": "setup-vorpal-action",
+    };
+    if (process.env.GITHUB_TOKEN) {
+        headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+    }
+    const response = await fetch(VORPAL_LATEST_RELEASE_URL, {
+        headers,
+        signal: AbortSignal.timeout(10000),
+    });
+    if (!response.ok) {
+        throw new Error(`Failed to fetch latest Vorpal release: GitHub API returned ${response.status} ${response.statusText}`);
+    }
+    const data = await response.json();
+    const tagName = typeof data === "object" && data !== null && "tag_name" in data
+        ? data.tag_name
+        : undefined;
+    if (typeof tagName !== "string" || tagName.length === 0) {
+        throw new Error("Unexpected GitHub API response: missing tag_name");
+    }
+    if (!VORPAL_VERSION_TAG_REGEX.test(tagName)) {
+        throw new Error(`Latest Vorpal release tag "${tagName}" does not match expected version format`);
+    }
+    return tagName;
+}
 async function run() {
     try {
         const inputs = {
-            version: coreExports.getInput("version") || "0.1.1",
+            version: coreExports.getInput("version"),
             useLocalBuild: coreExports.getInput("use-local-build") === "true",
             registryBackend: coreExports.getInput("registry-backend") || "local",
             registryBackendS3Bucket: coreExports.getInput("registry-backend-s3-bucket"),
             port: coreExports.getInput("port"),
             services: coreExports.getInput("services") || "agent,registry,worker",
         };
+        let version = inputs.version;
+        if (!version && !inputs.useLocalBuild) {
+            version = await getLatestVersion();
+            coreExports.info(`Resolved latest Vorpal version: ${version}`);
+        }
+        coreExports.setOutput("version", version);
         const isLinux = process.platform === "linux";
         if (isLinux) {
             coreExports.info("Linux platform detected.");
             await installBubblewrapIfAptAvailable();
             await setupBubblewrapAppArmor();
         }
-        await installVorpal(inputs.version, inputs.useLocalBuild);
+        await installVorpal(version, inputs.useLocalBuild);
         await setupVorpalDirectories();
         await generateVorpalKeys();
         await startVorpal(inputs.registryBackend, inputs.registryBackendS3Bucket, inputs.port, inputs.services);
@@ -27462,5 +27497,5 @@ async function startVorpal(registryBackend, registryBackendS3Bucket, port, servi
 }
 run();
 
-export { generateVorpalKeys, installVorpal, run, setupVorpalDirectories, startVorpal };
+export { generateVorpalKeys, getLatestVersion, installVorpal, run, setupVorpalDirectories, startVorpal };
 //# sourceMappingURL=index.js.map
