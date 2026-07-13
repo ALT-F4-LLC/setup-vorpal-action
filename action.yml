@@ -4,6 +4,10 @@ inputs:
   version:
     description: "The version of Vorpal to install (e.g., v0.4.0). Defaults to the latest release on GitHub when omitted."
     required: false
+  github-token:
+    description: "Token used to authenticate 'gh attestation verify' when installing a downloaded Vorpal release binary."
+    required: false
+    default: "${{ github.token }}"
   use-local-build:
     description: "Use a pre-built binary from the workspace."
     required: false
