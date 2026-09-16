@@ -1,13 +1,14 @@
-import require$$0 from 'os';
+import * as require$$0 from 'os';
+import require$$0__default from 'os';
 import require$$0$1 from 'crypto';
 import * as fs from 'fs';
 import fs__default from 'fs';
-import * as require$$1 from 'path';
-import require$$1__default from 'path';
+import * as path from 'path';
+import path__default from 'path';
 import require$$2 from 'http';
 import require$$3 from 'https';
 import require$$0$4 from 'net';
-import require$$1$1 from 'tls';
+import require$$1 from 'tls';
 import require$$4 from 'events';
 import require$$0$3 from 'assert';
 import require$$0$2 from 'util';
@@ -16,14 +17,14 @@ import require$$7 from 'buffer';
 import require$$8 from 'querystring';
 import require$$14 from 'stream/web';
 import require$$0$7 from 'node:stream';
-import require$$1$2 from 'node:util';
+import require$$1$1 from 'node:util';
 import require$$0$6 from 'node:events';
 import require$$0$8 from 'worker_threads';
 import require$$2$1 from 'perf_hooks';
 import require$$5 from 'util/types';
 import require$$4$1 from 'async_hooks';
-import require$$1$3 from 'console';
-import require$$1$4 from 'url';
+import require$$1$2 from 'console';
+import require$$1$3 from 'url';
 import require$$3$1 from 'zlib';
 import require$$6 from 'string_decoder';
 import require$$0$9 from 'diagnostics_channel';
@@ -115,7 +116,7 @@ function requireCommand () {
 	};
 	Object.defineProperty(command, "__esModule", { value: true });
 	command.issue = command.issueCommand = void 0;
-	const os = __importStar(require$$0);
+	const os = __importStar(require$$0__default);
 	const utils_1 = requireUtils$1();
 	/**
 	 * Commands
@@ -225,7 +226,7 @@ function requireFileCommand () {
 	/* eslint-disable @typescript-eslint/no-explicit-any */
 	const crypto = __importStar(require$$0$1);
 	const fs = __importStar(fs__default);
-	const os = __importStar(require$$0);
+	const os = __importStar(require$$0__default);
 	const utils_1 = requireUtils$1();
 	function issueFileCommand(command, message) {
 	    const filePath = process.env[`GITHUB_${command}`];
@@ -374,7 +375,7 @@ var hasRequiredTunnel$1;
 function requireTunnel$1 () {
 	if (hasRequiredTunnel$1) return tunnel$1;
 	hasRequiredTunnel$1 = 1;
-	var tls = require$$1$1;
+	var tls = require$$1;
 	var http = require$$2;
 	var https = require$$3;
 	var events = require$$4;
@@ -1756,7 +1757,7 @@ function requireSbmh () {
 	 * by Hongli Lai at: https://github.com/FooBarWidget/boyer-moore-horspool
 	 */
 	const EventEmitter = require$$0$6.EventEmitter;
-	const inherits = require$$1$2.inherits;
+	const inherits = require$$1$1.inherits;
 
 	function SBMH (needle) {
 	  if (typeof needle === 'string') {
@@ -1965,7 +1966,7 @@ function requirePartStream () {
 	if (hasRequiredPartStream) return PartStream_1;
 	hasRequiredPartStream = 1;
 
-	const inherits = require$$1$2.inherits;
+	const inherits = require$$1$1.inherits;
 	const ReadableStream = require$$0$7.Readable;
 
 	function PartStream (opts) {
@@ -2011,7 +2012,7 @@ function requireHeaderParser () {
 	hasRequiredHeaderParser = 1;
 
 	const EventEmitter = require$$0$6.EventEmitter;
-	const inherits = require$$1$2.inherits;
+	const inherits = require$$1$1.inherits;
 	const getLimit = requireGetLimit();
 
 	const StreamSearch = requireSbmh();
@@ -2119,7 +2120,7 @@ function requireDicer () {
 	hasRequiredDicer = 1;
 
 	const WritableStream = require$$0$7.Writable;
-	const inherits = require$$1$2.inherits;
+	const inherits = require$$1$1.inherits;
 
 	const StreamSearch = requireSbmh();
 
@@ -2696,7 +2697,7 @@ function requireMultipart () {
 	//     -- this will require modifications to utils.parseParams
 
 	const { Readable } = require$$0$7;
-	const { inherits } = require$$1$2;
+	const { inherits } = require$$1$1;
 
 	const Dicer = requireDicer();
 
@@ -3262,7 +3263,7 @@ function requireMain () {
 	hasRequiredMain = 1;
 
 	const WritableStream = require$$0$7.Writable;
-	const { inherits } = require$$1$2;
+	const { inherits } = require$$1$1;
 	const Dicer = requireDicer();
 
 	const MultipartParser = requireMultipart();
@@ -8086,7 +8087,7 @@ function requireConnect () {
 	    let socket;
 	    if (protocol === 'https:') {
 	      if (!tls) {
-	        tls = require$$1$1;
+	        tls = require$$1;
 	      }
 	      servername = servername || options.servername || util.getServerName(host) || null;
 
@@ -14110,7 +14111,7 @@ function requirePendingInterceptorsFormatter () {
 	hasRequiredPendingInterceptorsFormatter = 1;
 
 	const { Transform } = require$$0$5;
-	const { Console } = require$$1$3;
+	const { Console } = require$$1$2;
 
 	/**
 	 * Gets the output of `console.table(…)` as a string.
@@ -14337,7 +14338,7 @@ function requireProxyAgent () {
 	hasRequiredProxyAgent = 1;
 
 	const { kProxy, kClose, kDestroy, kInterceptors } = requireSymbols$4();
-	const { URL } = require$$1$4;
+	const { URL } = require$$1$3;
 	const Agent = requireAgent();
 	const Pool = requirePool();
 	const DispatcherBase = requireDispatcherBase();
@@ -25201,7 +25202,7 @@ function requireSummary () {
 		};
 		Object.defineProperty(exports, "__esModule", { value: true });
 		exports.summary = exports.markdownSummary = exports.SUMMARY_DOCS_URL = exports.SUMMARY_ENV_VAR = void 0;
-		const os_1 = require$$0;
+		const os_1 = require$$0__default;
 		const fs_1 = fs__default;
 		const { access, appendFile, writeFile } = fs_1.promises;
 		exports.SUMMARY_ENV_VAR = 'GITHUB_STEP_SUMMARY';
@@ -25508,7 +25509,7 @@ function requirePathUtils () {
 	};
 	Object.defineProperty(pathUtils, "__esModule", { value: true });
 	pathUtils.toPlatformPath = pathUtils.toWin32Path = pathUtils.toPosixPath = void 0;
-	const path = __importStar(require$$1__default);
+	const path = __importStar(path__default);
 	/**
 	 * toPosixPath converts the given path to the posix form. On Windows, \\ will be
 	 * replaced with /.
@@ -25595,7 +25596,7 @@ function requireIoUtil () {
 		Object.defineProperty(exports, "__esModule", { value: true });
 		exports.getCmdPath = exports.tryGetExecutablePath = exports.isRooted = exports.isDirectory = exports.exists = exports.READONLY = exports.UV_FS_O_EXLOCK = exports.IS_WINDOWS = exports.unlink = exports.symlink = exports.stat = exports.rmdir = exports.rm = exports.rename = exports.readlink = exports.readdir = exports.open = exports.mkdir = exports.lstat = exports.copyFile = exports.chmod = void 0;
 		const fs = __importStar(fs__default);
-		const path = __importStar(require$$1__default);
+		const path = __importStar(path__default);
 		_a = fs.promises
 		// export const {open} = 'fs'
 		, exports.chmod = _a.chmod, exports.copyFile = _a.copyFile, exports.lstat = _a.lstat, exports.mkdir = _a.mkdir, exports.open = _a.open, exports.readdir = _a.readdir, exports.readlink = _a.readlink, exports.rename = _a.rename, exports.rm = _a.rm, exports.rmdir = _a.rmdir, exports.stat = _a.stat, exports.symlink = _a.symlink, exports.unlink = _a.unlink;
@@ -25785,7 +25786,7 @@ function requireIo () {
 	Object.defineProperty(io, "__esModule", { value: true });
 	io.findInPath = io.which = io.mkdirP = io.rmRF = io.mv = io.cp = void 0;
 	const assert_1 = require$$0$3;
-	const path = __importStar(require$$1__default);
+	const path = __importStar(path__default);
 	const ioUtil = __importStar(requireIoUtil());
 	/**
 	 * Copies a file or folder.
@@ -26090,10 +26091,10 @@ function requireToolrunner () {
 	};
 	Object.defineProperty(toolrunner, "__esModule", { value: true });
 	toolrunner.argStringToArray = toolrunner.ToolRunner = void 0;
-	const os = __importStar(require$$0);
+	const os = __importStar(require$$0__default);
 	const events = __importStar(require$$4);
 	const child = __importStar(require$$2$2);
-	const path = __importStar(require$$1__default);
+	const path = __importStar(path__default);
 	const io = __importStar(requireIo());
 	const ioUtil = __importStar(requireIoUtil());
 	const timers_1 = require$$6$1;
@@ -26833,7 +26834,7 @@ function requirePlatform () {
 		};
 		Object.defineProperty(exports, "__esModule", { value: true });
 		exports.getDetails = exports.isLinux = exports.isMacOS = exports.isWindows = exports.arch = exports.platform = void 0;
-		const os_1 = __importDefault(require$$0);
+		const os_1 = __importDefault(require$$0__default);
 		const exec = __importStar(requireExec());
 		const getWindowsInfo = () => __awaiter(void 0, void 0, void 0, function* () {
 		    const { stdout: version } = yield exec.getExecOutput('powershell -command "(Get-CimInstance -ClassName Win32_OperatingSystem).Version"', undefined, {
@@ -26936,8 +26937,8 @@ function requireCore () {
 		const command_1 = requireCommand();
 		const file_command_1 = requireFileCommand();
 		const utils_1 = requireUtils$1();
-		const os = __importStar(require$$0);
-		const path = __importStar(require$$1__default);
+		const os = __importStar(require$$0__default);
+		const path = __importStar(path__default);
 		const oidc_utils_1 = requireOidcUtils();
 		/**
 		 * The code to exit an action
@@ -27382,26 +27383,37 @@ async function setupBubblewrapAppArmor() {
 }
 async function installVorpal(version, useLocalBuild, githubToken) {
     coreExports.info("Installing Vorpal...");
+    const vorpalBinDir = path.join(require$$0.homedir(), ".vorpal", "bin");
+    const vorpalBinPath = path.join(vorpalBinDir, "vorpal");
     if (useLocalBuild) {
         coreExports.info("Using local build of vorpal");
-        await execExports.exec("chmod", ["+x", "./dist/vorpal"]);
-        coreExports.addPath(require$$1.join(process.cwd(), "dist"));
+        await execExports.exec("mkdir", ["-p", vorpalBinDir]);
+        await execExports.exec("cp", [
+            path.join(process.cwd(), "dist", "vorpal"),
+            vorpalBinPath,
+        ]);
+        await execExports.exec("chmod", ["+x", vorpalBinPath]);
+        coreExports.info(`Installed Vorpal to ${vorpalBinPath}`);
+        coreExports.addPath(vorpalBinDir);
     }
     else {
         if (!version) {
             throw new Error("'version' input is required when 'use-local-build' is false.");
         }
-        const os = process.platform === "darwin" ? "darwin" : "linux";
+        const osName = process.platform === "darwin" ? "darwin" : "linux";
         const arch = process.arch === "x64" ? "x86_64" : "aarch64";
-        const releaseAsset = `vorpal-${arch}-${os}.tar.gz`;
+        const releaseAsset = `vorpal-${arch}-${osName}.tar.gz`;
         const releaseUrl = `https://github.com/ALT-F4-LLC/vorpal/releases/download/${version}/${releaseAsset}`;
         coreExports.info(`Downloading from ${releaseUrl}`);
         await execExports.exec("curl", ["-sSL", "-o", releaseAsset, releaseUrl]);
         await execExports.exec("tar", ["-xzf", releaseAsset]);
         await verifyVorpalAttestation("vorpal", version, releaseAsset, githubToken);
         await execExports.exec("rm", [releaseAsset]);
-        await execExports.exec("chmod", ["+x", "vorpal"]);
-        coreExports.addPath(process.cwd());
+        await execExports.exec("mkdir", ["-p", vorpalBinDir]);
+        await execExports.exec("mv", ["vorpal", vorpalBinPath]);
+        await execExports.exec("chmod", ["+x", vorpalBinPath]);
+        coreExports.info(`Installed Vorpal to ${vorpalBinPath}`);
+        coreExports.addPath(vorpalBinDir);
     }
 }
 async function verifyVorpalAttestation(binaryPath, version, releaseAsset, githubToken) {

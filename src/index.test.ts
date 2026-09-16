@@ -1,4 +1,6 @@
 import { jest, describe, it, expect } from "@jest/globals";
+import * as os from "os";
+import * as path from "path";
 
 const coreGetInputMock = jest.fn(() => "") as unknown as jest.MockedFunction<
   (name: string) => string
@@ -147,6 +149,8 @@ describe("installVorpal (download path attestation verification)", () => {
       .mockResolvedValueOnce(0) // gh --version
       .mockResolvedValueOnce(0) // gh attestation verify
       .mockResolvedValueOnce(0) // rm
+      .mockResolvedValueOnce(0) // mkdir
+      .mockResolvedValueOnce(0) // mv
       .mockResolvedValueOnce(0); // chmod
   }
 
@@ -172,6 +176,8 @@ describe("installVorpal (download path attestation verification)", () => {
       "gh",
       "gh",
       "rm",
+      "mkdir",
+      "mv",
       "chmod",
     ]);
 
@@ -185,7 +191,15 @@ describe("installVorpal (download path attestation verification)", () => {
     expect(tarIndex).toBeLessThan(verifyIndex);
     expect(verifyIndex).toBeLessThan(chmodIndex);
 
-    expect(coreAddPathMock).toHaveBeenCalledWith(process.cwd());
+    const chmodCall = execMock.mock.calls.find((call) => call[0] === "chmod");
+
+    expect(chmodCall?.[1]).toEqual([
+      "+x",
+      path.join(os.homedir(), ".vorpal", "bin", "vorpal"),
+    ]);
+    expect(coreAddPathMock).toHaveBeenCalledWith(
+      path.join(os.homedir(), ".vorpal", "bin"),
+    );
     expect(coreInfoMock).toHaveBeenCalledWith(
       expect.stringContaining("Verified Vorpal"),
     );

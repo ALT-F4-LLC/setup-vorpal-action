@@ -2,6 +2,7 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import { spawn, ChildProcess } from "child_process";
 import * as fs from "fs";
+import * as os from "os";
 import * as path from "path";
 
 interface VorpalInputs {
@@ -205,12 +206,22 @@ export async function installVorpal(
 ): Promise<void> {
   core.info("Installing Vorpal...");
 
+  const vorpalBinDir = path.join(os.homedir(), ".vorpal", "bin");
+  const vorpalBinPath = path.join(vorpalBinDir, "vorpal");
+
   if (useLocalBuild) {
     core.info("Using local build of vorpal");
 
-    await exec.exec("chmod", ["+x", "./dist/vorpal"]);
+    await exec.exec("mkdir", ["-p", vorpalBinDir]);
+    await exec.exec("cp", [
+      path.join(process.cwd(), "dist", "vorpal"),
+      vorpalBinPath,
+    ]);
+    await exec.exec("chmod", ["+x", vorpalBinPath]);
 
-    core.addPath(path.join(process.cwd(), "dist"));
+    core.info(`Installed Vorpal to ${vorpalBinPath}`);
+
+    core.addPath(vorpalBinDir);
   } else {
     if (!version) {
       throw new Error(
@@ -218,9 +229,9 @@ export async function installVorpal(
       );
     }
 
-    const os = process.platform === "darwin" ? "darwin" : "linux";
+    const osName = process.platform === "darwin" ? "darwin" : "linux";
     const arch = process.arch === "x64" ? "x86_64" : "aarch64";
-    const releaseAsset = `vorpal-${arch}-${os}.tar.gz`;
+    const releaseAsset = `vorpal-${arch}-${osName}.tar.gz`;
     const releaseUrl = `https://github.com/ALT-F4-LLC/vorpal/releases/download/${version}/${releaseAsset}`;
 
     core.info(`Downloading from ${releaseUrl}`);
@@ -231,9 +242,13 @@ export async function installVorpal(
     await verifyVorpalAttestation("vorpal", version, releaseAsset, githubToken);
 
     await exec.exec("rm", [releaseAsset]);
-    await exec.exec("chmod", ["+x", "vorpal"]);
+    await exec.exec("mkdir", ["-p", vorpalBinDir]);
+    await exec.exec("mv", ["vorpal", vorpalBinPath]);
+    await exec.exec("chmod", ["+x", vorpalBinPath]);
 
-    core.addPath(process.cwd());
+    core.info(`Installed Vorpal to ${vorpalBinPath}`);
+
+    core.addPath(vorpalBinDir);
   }
 }
 

@@ -98,7 +98,7 @@ missing attestation, wrong signer, or `gh` unavailable).
 
 ## What the Action Does
 
-1. **Install Vorpal**: Downloads and installs the Vorpal binary from GitHub releases
+1. **Install Vorpal**: Downloads the Vorpal binary from GitHub releases, installs it to `~/.vorpal/bin/vorpal`, and adds `~/.vorpal/bin` to `PATH`
 2. **Setup Directories**: Creates necessary directories under `/var/lib/vorpal/` with proper permissions
 3. **Generate Keys**: Creates cryptographic keys required by Vorpal
 4. **Start Services**: Launches the specified Vorpal services in the background
