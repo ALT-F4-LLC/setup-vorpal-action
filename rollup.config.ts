@@ -14,7 +14,7 @@ export default [
     plugins: [
       typescript(),
       nodeResolve({
-        preferBuiltins: true,
+        preferBuiltins: (id) => id !== "undici",
       }),
       commonjs(),
     ],
@@ -30,7 +30,7 @@ export default [
     plugins: [
       typescript(),
       nodeResolve({
-        preferBuiltins: true,
+        preferBuiltins: (id) => id !== "undici",
       }),
       commonjs(),
     ],
